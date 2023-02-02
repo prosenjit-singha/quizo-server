@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const quizHandler = require("./routes/quizHandler.js");
 
 const app = express();
 app.use(cors());
@@ -13,7 +14,7 @@ const port = process.env.PORT || 5000;
 mongoose.set("strictQuery", false);
 mongoose
   .connect(
-    `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASS}@cluster0.0hl8m1y.mongodb.net/?retryWrites=true&w=majority`,
+    `mongodb+srv://${process.env.DB_USER_NAME}:${process.env.DB_USER_PASS}@cluster0.0hl8m1y.mongodb.net/quizo?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
     }
@@ -21,12 +22,17 @@ mongoose
   .then(() => console.log("Successfully connected with database!"))
   .catch((err) => console.log(err));
 
+app.use("/quiz", quizHandler);
+
+app.get("/", (_req, res) => {
+  res.send("Server running...");
+});
 /************* 404 ERROR HANDLER *************/
 app.use((_req, _res, next) => {
   next("Requested URL was not found!");
 });
 
-/************* UNIVERSAL ERROR HANDLER *************/
+/************* CUSTOM ERROR HANDLER *************/
 app.use((err, req, res, next) => {
   if (req.headersSent) {
     next("There was a problem!");
